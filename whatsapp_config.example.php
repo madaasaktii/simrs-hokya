@@ -4,7 +4,7 @@
 // =========================
 
 // Dapatkan token dari: https://fonnte.com/dashboard
-define('FONNTE_TOKEN', 'H58qE3sNA6ySp1gNKdJ1'); // Ganti dengan token Fonnte Anda 
+define('FONNTE_TOKEN', 'ISI_TOKEN_DI_SINI'); // Ganti dengan token Fonnte Anda
 define('FONNTE_URL', 'https://api.fonnte.com/send');
 
 /**
