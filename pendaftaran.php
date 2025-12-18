@@ -131,6 +131,7 @@
                 <div class="col-md-6">
                   <label class="form-label">Jenis Kelamin</label>
                   <select name="jenis_kelamin" class="form-select" required>
+                    <option value="">-- Pilih --</option>
                     <option value="L">Laki-laki</option>
                     <option value="P">Perempuan</option>
                   </select>
@@ -151,52 +152,50 @@
 
               <div class="d-flex align-items-center gap-2 mb-3">
                 <span class="badge text-bg-primary">2</span>
-                <h5 class="text-primary mb-0 section-title">Pilih Jadwal Dokter</h5>
+                <h5 class="text-primary mb-0 section-title">Rencana Kunjungan</h5>
               </div>
 
               <div class="row g-3">
                 <div class="col-md-6">
                   <label class="form-label fw-bold">Poli Tujuan</label>
-                  <select name="poli" id="poli" class="form-select" required onchange="tampilkanDokter()">
-                    <option value="" selected>-- Pilih Poli Dahulu --</option>
-                    <option value="Umum">Poli Umum</option>
-                    <option value="Gigi">Poli Gigi</option>
-                    <option value="Anak">Poli Anak</option>
-                    <option value="Kandungan">Poli Kandungan</option>
-                    <option value="Jantung">Poli Jantung</option>
+                  <select name="poli" id="poli" class="form-select" required>
+                    <option value="" selected>-- Pilih Poli --</option>
+                    <option value="Poli Anak">Poli Anak</option>
+                    <option value="Poli Jantung">Poli Jantung</option>
+                    <option value="Poli Syaraf">Poli Syaraf</option>
+                    <option value="Poli Penyakit Dalam">Poli Penyakit Dalam</option>
+                    <option value="Poli Gigi">Poli Gigi</option>
                   </select>
                 </div>
 
                 <div class="col-md-6">
-                  <label class="form-label fw-bold">Pilih Dokter & Jam Praktek</label>
-                  <select name="dokter_tujuan" id="dokter" class="form-select" required>
-                    <option value="">-- Pilih Poli Dahulu --</option>
-                  </select>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="form-label">Rencana Tanggal Periksa</label>
+                  <label class="form-label">Rencana Tanggal Kunjungan</label>
                   <input type="date" name="tgl_kunjungan" class="form-control" required>
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label">Cara Bayar</label>
                   <select name="cara_bayar" class="form-select" required>
+                    <option value="">-- Pilih --</option>
                     <option value="Umum">Umum / Tunai</option>
                     <option value="BPJS">BPJS Kesehatan</option>
                     <option value="Asuransi">Asuransi Lain</option>
                   </select>
                 </div>
 
-                <div class="col-12">
+                <div class="col-md-6">
                   <label class="form-label">Nomor BPJS (Jika Ada)</label>
                   <input type="text" name="no_bpjs" class="form-control" placeholder="Kosongkan jika Umum">
                 </div>
               </div>
 
+              <div class="alert alert-info mt-4">
+                <small><i class="fa-solid fa-circle-info me-1"></i> <b>Catatan:</b> Nomor antrian dan jadwal dokter akan ditentukan oleh petugas saat Anda datang ke rumah sakit.</small>
+              </div>
+
               <div class="d-grid gap-2 mt-4">
                 <button type="submit" class="btn btn-primary btn-lg fw-bold w-100 btn-submit">
-                  BUAT JANJI SEKARANG
+                  DAFTAR SEKARANG
                 </button>
                 <a href="index.html" class="btn btn-outline-secondary w-100">Batal</a>
               </div>
@@ -214,49 +213,6 @@
     </div>
   </div>
 
-  <script>
-    function tampilkanDokter() {
-      var poli = document.getElementById("poli").value;
-      var listDokter = document.getElementById("dokter");
-
-      // placeholder dulu
-      listDokter.innerHTML = '<option value="">-- Pilih Dokter --</option>';
-
-      var dataDokter = {
-        "Umum": [
-          "dr. Budi Santoso (08:00 - 14:00)|dr. Budi Santoso",
-          "dr. Siti Aminah (14:00 - 20:00)|dr. Siti Aminah"
-        ],
-        "Gigi": [
-          "drg. Ratna Sari (09:00 - 13:00)|drg. Ratna Sari",
-          "drg. Andi Pratama (16:00 - 20:00)|drg. Andi Pratama"
-        ],
-        "Anak": [
-          "dr. Rina Kartika, Sp.A (08:00 - 12:00)|dr. Rina Kartika, Sp.A",
-          "dr. Joko Widodo, Sp.A (15:00 - 19:00)|dr. Joko Widodo, Sp.A"
-        ],
-        "Kandungan": [
-          "dr. Boyke, Sp.OG (10:00 - 14:00)|dr. Boyke, Sp.OG"
-        ],
-        "Jantung": [
-          "dr. Tirta, Sp.JP (09:00 - 15:00)|dr. Tirta, Sp.JP"
-        ]
-      };
-
-      if (dataDokter[poli]) {
-        dataDokter[poli].forEach(function(item) {
-          var parts = item.split("|");
-          var option = document.createElement("option");
-          option.text = parts[0];
-          option.value = parts[1];
-          listDokter.add(option);
-        });
-      } else {
-        listDokter.innerHTML = '<option value="">-- Pilih Poli Dahulu --</option>';
-      }
-    }
-  </script>
-
 <div id="reminderBox"></div>
 
 <script src="assets/js/pwa-notif.js"></script>
@@ -264,8 +220,8 @@
   // mount UI pengingat di halaman pendaftaran
   initReminderUI({
     mountId: "reminderBox",
-    poli: "",       // nanti kalau mau auto isi, bisa kita ambil dari dropdown poli
-    queue: ""       // nomor antrian baru ada setelah submit, jadi kosong dulu
+    poli: "",
+    queue: ""
   });
 </script>
 

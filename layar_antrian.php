@@ -131,16 +131,16 @@
                         // Jika ada antrian yang dipanggil:
                         
                         // 1. Update Nomor (Misal: G-1)
-                        document.getElementById('layar_no').innerText = data.no_antrian;
+                        document.getElementById('layar_no').innerText = data.nomor;
                         
                         // 2. Update Nama Pasien
-                        document.getElementById('layar_nama').innerText = data.nama;
+                        document.getElementById('layar_nama').innerText = data.nama_pasien;
                         
                         // 3. Update Kotak Poli (Huruf Kapital Semua)
-                        document.getElementById('layar_poli').innerText = "POLI " + data.poli.toUpperCase();
+                        document.getElementById('layar_poli').innerText = "POLI " + data.kode_poli.toUpperCase();
                         
                         // 4. Update Nama Dokter
-                        document.getElementById('layar_dokter').innerText = data.dokter;
+                        document.getElementById('layar_dokter').innerText = data.dokter_tujuan;
 
                     } else {
                         // Jika antrian kosong / istirahat:

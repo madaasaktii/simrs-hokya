@@ -1,17 +1,40 @@
 <?php
 include 'koneksi.php';
 
-$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-if ($id <= 0) {
-  die("Data tidak ditemukan.");
+// AKTIFKAN ERROR UNTUK DEBUGGING
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+$nik = isset($_GET['nik']) ? trim($_GET['nik']) : '';
+
+// DEBUG: Tampilkan NIK yang diterima
+echo "<!-- DEBUG: NIK dari URL = '$nik' -->\n";
+
+if (empty($nik)) {
+  die("Data tidak ditemukan. NIK kosong.");
 }
 
-// Ambil data pendaftaran
-$q = mysqli_query($koneksi, "SELECT * FROM pasien WHERE id = $id LIMIT 1");
-if (!$q || mysqli_num_rows($q) === 0) {
-  die("Data tidak ditemukan.");
+// Ambil data pendaftaran berdasarkan NIK (pakai mysqli_query dulu untuk debug)
+$nik_escaped = mysqli_real_escape_string($koneksi, $nik);
+$query = "SELECT * FROM pendaftaran_pasien WHERE nik = '$nik_escaped' ORDER BY created_at DESC LIMIT 1";
+
+echo "<!-- DEBUG: Query = $query -->\n";
+
+$result = mysqli_query($koneksi, $query);
+
+if (!$result) {
+  die("Error query: " . mysqli_error($koneksi));
 }
-$p = mysqli_fetch_assoc($q);
+
+if (mysqli_num_rows($result) === 0) {
+  // DEBUG: Cek apakah ada data di tabel
+  $count_query = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pendaftaran_pasien");
+  $count = mysqli_fetch_assoc($count_query);
+  
+  die("Data tidak ditemukan untuk NIK: $nik. Total data di tabel: " . $count['total']);
+}
+
+$p = mysqli_fetch_assoc($result);
 
 // Helper aman tampil
 function e($str) { return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8'); }
@@ -57,13 +80,13 @@ function e($str) { return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8'); }
 
           <div class="card-body p-4">
             <!-- Hidden input buat reminder ambil tanggal -->
-            <input type="hidden" id="tgl_kunjungan" value="<?= e($p['tgl_kunjungan']) ?>">
+            <input type="hidden" id="tgl_kunjungan" value="<?= e($p['rencana_kunjungan']) ?>">
 
             <div class="text-center mb-3">
-              <div class="small-muted">Nomor Antrian</div>
-              <div class="ticket-badge text-primary"><?= e($p['no_antrian']) ?></div>
-              <div class="badge bg-warning text-dark px-3 py-2 mt-2">
-                Status: <?= e($p['status_antrian']) ?>
+              <div class="small-muted">Nomor Identitas (NIK)</div>
+              <div class="ticket-badge text-primary"><?= e($p['nik']) ?></div>
+              <div class="badge bg-success text-white px-3 py-2 mt-2">
+                Terdaftar
               </div>
             </div>
 
@@ -75,31 +98,51 @@ function e($str) { return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8'); }
                 <div class="fw-semibold"><?= e($p['nama']) ?></div>
               </div>
               <div class="col-md-6">
-                <div class="small-muted">NIK</div>
-                <div class="fw-semibold"><?= e($p['nik']) ?></div>
+                <div class="small-muted">Tanggal Daftar</div>
+                <div class="fw-semibold"><?= e($p['created_at']) ?></div>
               </div>
 
               <div class="col-md-6">
-                <div class="small-muted">Poli</div>
+                <div class="small-muted">Tempat, Tanggal Lahir</div>
+                <div class="fw-semibold"><?= e($p['tempat_lahir']) ?>, <?= e($p['tgl_lahir']) ?></div>
+              </div>
+              <div class="col-md-6">
+                <div class="small-muted">Jenis Kelamin</div>
+                <div class="fw-semibold"><?= $p['jenis_kelamin'] === 'L' ? 'Laki-laki' : 'Perempuan' ?></div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="small-muted">No. HP</div>
+                <div class="fw-semibold"><?= e($p['no_hp']) ?></div>
+              </div>
+              <div class="col-md-6">
+                <div class="small-muted">Alamat</div>
+                <div class="fw-semibold"><?= e($p['alamat']) ?></div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="small-muted">Poli Tujuan</div>
                 <div class="fw-semibold"><?= e($p['poli']) ?></div>
               </div>
               <div class="col-md-6">
-                <div class="small-muted">Dokter</div>
-                <div class="fw-semibold"><?= e($p['dokter_tujuan']) ?></div>
+                <div class="small-muted">Rencana Kunjungan</div>
+                <div class="fw-semibold"><?= e($p['rencana_kunjungan']) ?></div>
               </div>
 
-              <div class="col-md-6">
-                <div class="small-muted">Tanggal Periksa</div>
-                <div class="fw-semibold"><?= e($p['tgl_kunjungan']) ?></div>
-              </div>
               <div class="col-md-6">
                 <div class="small-muted">Cara Bayar</div>
                 <div class="fw-semibold"><?= e($p['cara_bayar']) ?></div>
               </div>
+              <?php if(!empty($p['no_bpjs'])): ?>
+              <div class="col-md-6">
+                <div class="small-muted">No. BPJS</div>
+                <div class="fw-semibold"><?= e($p['no_bpjs']) ?></div>
+              </div>
+              <?php endif; ?>
             </div>
 
             <div class="alert alert-info mt-4 mb-0">
-              <b>Tips:</b> Screenshot nomor antrian ini ya. Nanti tinggal tunjukin saat datang.
+              <b>Tips:</b> Screenshot NIK dan data pendaftaran ini. Tunjukkan saat datang ke rumah sakit pada tanggal kunjungan.
             </div>
 
             <!-- BOX REMINDER / NOTIF -->
@@ -132,11 +175,11 @@ function e($str) { return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8'); }
     // daftar service worker (opsional tapi bagus)
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
 
-    // mount UI reminder dan auto isi poli+antrian dari data DB
+    // mount UI reminder dan auto isi poli dari data DB
     initReminderUI({
       mountId: "reminderBox",
       poli: "<?= e($p['poli']) ?>",
-      queue: "<?= e($p['no_antrian']) ?>",
+      queue: "<?= e($p['nik']) ?>",
       dateInputId: "tgl_kunjungan"
     });
   </script>

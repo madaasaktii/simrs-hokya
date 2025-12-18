@@ -1,6 +1,10 @@
 <?php
 include 'koneksi.php';
 
+// AKTIFKAN ERROR UNTUK DEBUGGING
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 /* =========================
    Helper
 ========================= */
@@ -11,18 +15,17 @@ function post($key) {
 /* =========================
    1. Ambil data form
 ========================= */
-$nik           = post('nik');
-$nama          = post('nama');
-$tempat_lahir  = post('tempat_lahir');
-$tgl_lahir     = post('tgl_lahir');
-$jenis_kelamin = post('jenis_kelamin');
-$no_hp         = post('no_hp');
-$alamat        = post('alamat');
-$tgl_kunjungan = post('tgl_kunjungan');
-$poli          = post('poli');
-$dokter_tujuan = post('dokter_tujuan');
-$cara_bayar    = post('cara_bayar');
-$no_bpjs       = post('no_bpjs');
+$nik              = post('nik');
+$nama             = post('nama');
+$tempat_lahir     = post('tempat_lahir');
+$tgl_lahir        = post('tgl_lahir');
+$jenis_kelamin    = post('jenis_kelamin');
+$no_hp            = post('no_hp');
+$alamat           = post('alamat');
+$rencana_kunjungan = post('tgl_kunjungan');
+$poli             = post('poli');
+$cara_bayar       = post('cara_bayar');
+$no_bpjs          = post('no_bpjs');
 
 /* =========================
    2. Validasi dasar
@@ -33,8 +36,8 @@ if (!preg_match('/^\d{16}$/', $nik)) {
 
 $wajib = [
   $nama, $tempat_lahir, $tgl_lahir, $jenis_kelamin,
-  $no_hp, $alamat, $tgl_kunjungan, $poli,
-  $dokter_tujuan, $cara_bayar
+  $no_hp, $alamat, $rencana_kunjungan, $poli,
+  $cara_bayar
 ];
 
 foreach ($wajib as $v) {
@@ -44,54 +47,37 @@ foreach ($wajib as $v) {
 }
 
 /* =========================
-   3. Data otomatis
-========================= */
-$status_antrian = "Menunggu";
-$tanggal_daftar = date('Y-m-d');
-
-/* =========================
-   4. Hitung nomor antrian
-   (reset per hari & poli)
-========================= */
-$q = $koneksi->prepare("
-  SELECT COALESCE(MAX(no_antrian), 0) AS max_no
-  FROM pasien
-  WHERE tanggal_daftar = ? AND poli = ?
-");
-$q->bind_param("ss", $tanggal_daftar, $poli);
-$q->execute();
-$res = $q->get_result()->fetch_assoc();
-$no_antrian = ((int)$res['max_no']) + 1;
-$q->close();
-
-/* =========================
-   5. Insert data pasien
+   3. Insert data pasien
 ========================= */
 $insert = $koneksi->prepare("
-  INSERT INTO pasien (
+  INSERT INTO pendaftaran_pasien (
     nik, nama, tempat_lahir, tgl_lahir, jenis_kelamin,
-    no_hp, alamat, tgl_kunjungan, poli, dokter_tujuan,
-    cara_bayar, no_bpjs, status_antrian, no_antrian, tanggal_daftar
-  ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    no_hp, alamat, rencana_kunjungan, poli, cara_bayar,
+    no_bpjs
+  ) VALUES (?,?,?,?,?,?,?,?,?,?,?)
 ");
 
+if (!$insert) {
+  die("Error prepare statement: " . $koneksi->error);
+}
+
 $insert->bind_param(
-  "sssssssssssssis",
+  "sssssssssss",
   $nik, $nama, $tempat_lahir, $tgl_lahir, $jenis_kelamin,
-  $no_hp, $alamat, $tgl_kunjungan, $poli, $dokter_tujuan,
-  $cara_bayar, $no_bpjs, $status_antrian, $no_antrian, $tanggal_daftar
+  $no_hp, $alamat, $rencana_kunjungan, $poli,
+  $cara_bayar, $no_bpjs
 );
 
 /* =========================
-   6. Redirect ke sukses.php
+   4. Execute dan redirect (pakai NIK, bukan ID)
 ========================= */
 if ($insert->execute()) {
-  $id = $koneksi->insert_id;   // ID pasien terakhir
-  header("Location: sukses.php?id=" . $id);
+  $insert->close();
+  $koneksi->close();
+  
+  // Redirect pakai NIK sebagai identifier
+  header("Location: sukses.php?nik=" . urlencode($nik));
   exit;
 } else {
   die("Gagal menyimpan data: " . $insert->error);
 }
-
-$insert->close();
-$koneksi->close();
