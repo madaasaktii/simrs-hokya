@@ -12,6 +12,40 @@ function post($key) {
   return isset($_POST[$key]) ? trim($_POST[$key]) : '';
 }
 
+/**
+ * Mapping nama poli ke kode poli
+ */
+function getKodePoli($namaPoli) {
+  $mapping = [
+    'Poli Anak' => 'A',
+    'Poli Jantung' => 'J',
+    'Poli Syaraf' => 'S',
+    'Poli Penyakit Dalam' => 'P',
+    'Poli Gigi' => 'G'
+  ];
+  
+  return isset($mapping[$namaPoli]) ? $mapping[$namaPoli] : null;
+}
+
+/**
+ * Generate nomor antrian berikutnya untuk poli & tanggal tertentu
+ */
+function getNextNomorAntrian($koneksi, $kode_poli, $tanggal) {
+  $query = "SELECT MAX(nomor) as max_nomor 
+            FROM antrian 
+            WHERE kode_poli = ? AND hari = ?";
+  
+  $stmt = $koneksi->prepare($query);
+  $stmt->bind_param("ss", $kode_poli, $tanggal);
+  $stmt->execute();
+  $result = $stmt->get_result();
+  $row = $result->fetch_assoc();
+  $stmt->close();
+  
+  $nextNomor = ($row['max_nomor'] ?? 0) + 1;
+  return $nextNomor;
+}
+
 /* =========================
    1. Ambil data form
 ========================= */
@@ -69,15 +103,123 @@ $insert->bind_param(
 );
 
 /* =========================
-   4. Execute dan redirect (pakai NIK, bukan ID)
+   4. Execute & Buat Antrian
 ========================= */
 if ($insert->execute()) {
   $insert->close();
-  $koneksi->close();
   
-  // Redirect pakai NIK sebagai identifier
+  // ============================================
+  // FIX: Ambil ID dari database berdasarkan NIK
+  // (karena AUTO_INCREMENT bermasalah, insert_id return 0)
+  // ============================================
+  $queryGetId = "SELECT id FROM pendaftaran_pasien WHERE nik = ? ORDER BY created_at DESC LIMIT 1";
+  $stmtGetId = $koneksi->prepare($queryGetId);
+  $stmtGetId->bind_param("s", $nik);
+  $stmtGetId->execute();
+  $resultGetId = $stmtGetId->get_result();
+  
+  if ($resultGetId->num_rows > 0) {
+    $rowId = $resultGetId->fetch_assoc();
+    $pasien_id = $rowId['id'];
+  } else {
+    die("Error: Data pasien tidak ditemukan setelah insert.");
+  }
+  $stmtGetId->close();
+  
+  // ============================================
+  // BUAT ANTRIAN OTOMATIS
+  // ============================================
+  $kode_poli = getKodePoli($poli);
+  
+  if ($kode_poli && $pasien_id > 0) {
+    // Dapatkan nomor antrian berikutnya
+    $nomor_antrian = getNextNomorAntrian($koneksi, $kode_poli, $rencana_kunjungan);
+    
+    // Insert ke tabel antrian
+    $insertAntrian = $koneksi->prepare("
+      INSERT INTO antrian (nomor, kode_poli, pasien_id, nama_pasien, status, hari)
+      VALUES (?, ?, ?, ?, 'waiting', ?)
+    ");
+    
+    $insertAntrian->bind_param(
+      "isiss",
+      $nomor_antrian,
+      $kode_poli,
+      $pasien_id,
+      $nama,
+      $rencana_kunjungan
+    );
+    
+    if ($insertAntrian->execute()) {
+      $antrian_id = $koneksi->insert_id;
+      
+      // Jika antrian_id juga 0, ambil manual
+      if ($antrian_id == 0) {
+        $queryGetAntrianId = "SELECT id FROM antrian 
+                              WHERE kode_poli = ? AND nomor = ? AND hari = ? 
+                              ORDER BY created_at DESC LIMIT 1";
+        $stmtGetAntrianId = $koneksi->prepare($queryGetAntrianId);
+        $stmtGetAntrianId->bind_param("sis", $kode_poli, $nomor_antrian, $rencana_kunjungan);
+        $stmtGetAntrianId->execute();
+        $resultAntrianId = $stmtGetAntrianId->get_result();
+        
+        if ($resultAntrianId->num_rows > 0) {
+          $rowAntrianId = $resultAntrianId->fetch_assoc();
+          $antrian_id = $rowAntrianId['id'];
+        }
+        $stmtGetAntrianId->close();
+      }
+      
+      $insertAntrian->close();
+      
+      // ============================================
+      // KIRIM WHATSAPP (OPSIONAL)
+      // ============================================
+      if (file_exists('whatsapp_config.php')) {
+        include 'whatsapp_config.php';
+        
+        $dataPassien = [
+          'nomor_antrian' => $kode_poli . '-' . str_pad($nomor_antrian, 3, '0', STR_PAD_LEFT),
+          'nik' => $nik,
+          'nama' => $nama,
+          'poli' => $poli,
+          'tgl_kunjungan' => $rencana_kunjungan,
+          'cara_bayar' => $cara_bayar,
+          'no_bpjs' => $no_bpjs
+        ];
+        
+        $pesan = templatePesanPendaftaran($dataPassien);
+        $hasilWA = kirimWhatsApp($no_hp, $pesan);
+        
+        // Log hasil
+        if ($hasilWA['status']) {
+          error_log("WhatsApp berhasil dikirim ke: " . $no_hp);
+        } else {
+          error_log("WhatsApp gagal: " . json_encode($hasilWA));
+        }
+        
+        $wa_param = "&wa=" . ($hasilWA['status'] ? '1' : '0');
+      } else {
+        $wa_param = "";
+      }
+      
+      $koneksi->close();
+      
+      // Redirect dengan ID antrian
+      header("Location: sukses.php?antrian_id=" . $antrian_id . $wa_param);
+      exit;
+    } else {
+      error_log("Gagal membuat antrian: " . $insertAntrian->error);
+      $insertAntrian->close();
+    }
+  }
+  
+  // Fallback jika gagal buat antrian, tetap redirect tapi pakai NIK
+  $koneksi->close();
   header("Location: sukses.php?nik=" . urlencode($nik));
   exit;
+  
 } else {
   die("Gagal menyimpan data: " . $insert->error);
 }
+?>
