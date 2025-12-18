@@ -514,7 +514,7 @@ $wa_sent = isset($_GET['wa']) && $_GET['wa'] == '1';
 
       <div class="footer">
         <div style="margin-bottom: 5px;">📍 Jl. Rumah Sakit No. 123, Surabaya</div>
-        <div>📞 (031) xxx-xxxx | 📧 info@rshokya.id</div>
+        <div>📞 (031) 555-777 | 📧 info@rshokya.id</div>
         <div style="margin-top: 10px; font-style: italic;">
           Dicetak: <?= date('d/m/Y H:i') ?>
         </div>
