@@ -131,7 +131,7 @@ if ($insert->execute()) {
   // ============================================
   $kode_poli = getKodePoli($poli);
   
-  if ($kode_poli && $pasien_id > 0) {
+  if ($kode_poli) {
     // Dapatkan nomor antrian berikutnya
     $nomor_antrian = getNextNomorAntrian($koneksi, $kode_poli, $rencana_kunjungan);
     
