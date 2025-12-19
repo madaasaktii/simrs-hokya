@@ -12,7 +12,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { 
       font-family: 'Poppins', sans-serif; 
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #42a5f5 0%, #478ed1 100%);
       min-height: 100vh;
       padding: 30px 20px;
     }
@@ -113,8 +113,8 @@
       border-radius: 20px;
       font-size: 0.8rem;
       font-weight: 600;
-      background: rgba(102, 126, 234, 0.15);
-      color: #667eea;
+      background: rgba(25, 118, 210, 0.15);
+      color: #1976d2;
       margin-top: 10px;
     }
     
