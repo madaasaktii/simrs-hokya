@@ -11,7 +11,7 @@ $user_display = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['usern
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin Dashboard | SIMRS (Satu)</title>
+  <title>Admin Dashboard | SIMRS HOKYA</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
@@ -25,8 +25,8 @@ $user_display = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['usern
 <header class="header sticky-top shadow-sm bg-white">
   <div class="container-fluid px-4 py-2 d-flex justify-content-between align-items-center">
     <div class="d-flex align-items-center gap-2">
-      <img src="assets/img/logo-baru.svg" style="height:42px" alt="logo">
-      <strong class="d-none d-md-inline">SIMRS (Satu)</strong>
+      <img src="assets/img/favicon.png" style="height:42px" alt="logo">
+      <strong class="d-none d-md-inline">SIMRS HOKYA</strong>
     </div>
     <div class="d-flex align-items-center gap-3">
       <div class="text-end d-none d-md-block">
@@ -47,6 +47,7 @@ $user_display = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['usern
       <ul class="nav nav-pills flex-column gap-1">
         <li class="nav-item"><a class="nav-link active" href="#overview"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
         <li class="nav-item"><a class="nav-link" href="#monitoring"><i class="bi bi-activity me-2"></i>Monitoring</a></li>
+        <li class="nav-item"><a class="nav-link" href="layar_antrian.php" target="_blank"><i class="bi bi-tv me-2"></i>Layar Antrian</a></li>
         <li class="nav-item"><a class="nav-link" href="riwayat_pasien.php"><i class="bi bi-people me-2"></i>Manajemen Pasien</a></li>
         <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-person-badge me-2"></i>SDM</a></li>
         <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-cash-coin me-2"></i>Billing</a></li>

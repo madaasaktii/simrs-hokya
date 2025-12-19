@@ -66,9 +66,34 @@ $selesai_hari_ini = hitungAntrean($conn, 'done', true);
         .card-custom { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .bg-gradient-blue { background: linear-gradient(45deg, #1977cc, #59b2ff); color: white; }
         .bg-gradient-orange { background: linear-gradient(45deg, #ff9800, #ff6f00); color: white; }
+        
+        /* Auto refresh indicator */
+        .refresh-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 9999;
+            background: rgba(25, 119, 204, 0.9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            display: none;
+            animation: fadeInOut 0.5s;
+        }
+        
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
     </style>
 </head>
 <body>
+
+<!-- Auto Refresh Indicator -->
+<div class="refresh-indicator" id="refreshIndicator">
+    <i class="bi bi-arrow-clockwise"></i> Memperbarui data...
+</div>
 
 <div class="container-fluid">
     <div class="row">
@@ -502,6 +527,40 @@ $selesai_hari_ini = hitungAntrean($conn, 'done', true);
 
 <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script>
+    // Auto refresh halaman setiap 5 detik (hanya jika tidak ada modal yang terbuka)
+    let autoRefreshInterval;
+    
+    function startAutoRefresh() {
+        autoRefreshInterval = setInterval(function() {
+            // Cek apakah ada modal yang sedang terbuka
+            const modalOpen = document.querySelector('.modal.show');
+            
+            if (!modalOpen) {
+                // Tampilkan indikator refresh
+                const indicator = document.getElementById('refreshIndicator');
+                indicator.style.display = 'block';
+                
+                // Reload halaman setelah 500ms
+                setTimeout(function() {
+                    location.reload();
+                }, 500);
+            }
+        }, 5000); // 5 detik
+    }
+    
+    // Mulai auto refresh saat halaman dimuat
+    startAutoRefresh();
+    
+    // Hentikan auto refresh ketika modal dibuka
+    document.getElementById('modalAnamnesis').addEventListener('show.bs.modal', function() {
+        clearInterval(autoRefreshInterval);
+    });
+    
+    // Mulai lagi auto refresh ketika modal ditutup
+    document.getElementById('modalAnamnesis').addEventListener('hidden.bs.modal', function() {
+        startAutoRefresh();
+    });
+
     // Handle tombol Panggil & Periksa
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('btn-panggil') || e.target.closest('.btn-panggil')) {
