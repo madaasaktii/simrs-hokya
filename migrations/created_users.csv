@@ -1,0 +1,15 @@
+username,password,role,name,poli_code
+admin,admin123,admin,Administrator,
+dr.anita,dokter123,dokter,"Dr. Anita",A
+dr.budi,dokter123,dokter,"Dr. Budi",A
+dr.cardi,dokter123,dokter,"Dr. Cardi",J
+dr.gigi.a,dokter123,dokter,"Dr. Gigi A",G
+dr.gigi.b,dokter123,dokter,"Dr. Gigi B",G
+dr.hartono,dokter123,dokter,"Dr. Hartono",J
+dr.neuro,dokter123,dokter,"Dr. Neuro",S
+dr.riza,dokter123,dokter,"Dr. Riza",P
+dr.santi,dokter123,dokter,"Dr. Santi",P
+dr.syafiq,dokter123,dokter,"Dr. Syafiq",S
+perawat,dokter123,perawat,"Perawat Default",
+perawat.rina,dokter123,perawat,"Perawat Rina",
+perawat.siti,dokter123,perawat,"Perawat Siti",

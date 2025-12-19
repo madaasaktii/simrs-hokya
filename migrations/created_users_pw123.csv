@@ -1,0 +1,16 @@
+Column1;Column2;Column3;Column4;Column5
+username;password;role;name;poli_code
+perawat.siti;pw123;perawat;Perawat Siti;
+perawat.rina;pw123;perawat;Perawat Rina;
+admin;pw123;admin;Administrator;
+perawat;pw123;perawat;Perawat Default;
+dr.anita;pw123;dokter;Dr. Anita;A
+dr.budi;pw123;dokter;Dr. Budi;A
+dr.cardi;pw123;dokter;Dr. Cardi;J
+dr.hartono;pw123;dokter;Dr. Hartono;J
+dr.santi;pw123;dokter;Dr. Santi;P
+dr.riza;pw123;dokter;Dr. Riza;P
+dr.gigi.a;pw123;dokter;Dr. Gigi A;G
+dr.gigi.b;pw123;dokter;Dr. Gigi B;G
+dr.neuro;pw123;dokter;Dr. Neuro;S
+dr.syafiq;pw123;dokter;Dr. Syafiq;S
